@@ -21,6 +21,9 @@ Represents a structural node used within the cubic spline calculator.
 
 ## 🛠️ API Reference
 
+## SMALL NOTES
+* Most of the scripts either upon error, either if they don't need to return any value(These being `Sample`, `Erase` and `DefineWarn`) will always return 0.
+
 ### 📈 Core Interpolation & Curves
 
 #### `Hermite:Linear(X: number, Start: number, End: number): number`
@@ -67,18 +70,18 @@ Executes a custom mathematically mapped function on an alpha factor instantly wi
 
 ### 💾 Custom Graph Registry (Caching)
 
-#### `Hermite:Sample(Id: string, Formula: (number) -> number): (number) -> number`
-Registers a custom mathematical formula into the internal global registry for deferred evaluation, then returns the formula itself.
+#### `Hermite:Sample<T>(Id: string, Formula: (number) -> T): number`
+Registers a custom mathematical formula into the internal global registry for deferred evaluation.
 * `Id`: Unique identifier for the custom graph.
-* `Formula`: The mathematical function mapping `(number) -> number`.
+* `Formula`: The mathematical function mapping `(number) -> T`.
 
-#### `Hermite:Evaluate(Id: string, X: number): number`
+#### `Hermite:Evaluate<T>(Id: string, X: number): T`
 Evaluates a previously registered custom graph by its identifier.
 * `Id`: The unique identifier of the registered graph.
 * `X`: The input value passed into the cached formula. *(Note: does not automatically clamp `X`)*.
 
 #### `Hermite:Erase(Id: string): number`
-Removes a custom graph from the registry cache. Always returns `0`.
+Removes a custom graph from the registry cache.
 * `Id`: The unique identifier of the graph to remove.
 
 ---
@@ -90,7 +93,7 @@ Snaps a float coefficient into discrete incremental steps. Useful for quantized 
 * `X`: The raw value.
 * `Steps`: The resolution threshold count.
 
-#### `Hermite:DefineWarn(Warn: boolean): boolean`
+#### `Hermite:DefineWarn(Warn: boolean): number`
 Enables or disables standard output configuration warnings generated when inputs exceed standard boundaries or constraints.
-* `Warn`: Toggles library warning reporting. Returns the passed boolean value.
+* `Warn`: Toggles library warning reporting.
 
