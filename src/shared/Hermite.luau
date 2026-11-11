@@ -23,7 +23,7 @@ local function xCheck(X:number, Above:boolean)
     return X
 end
 
-local BinomialTable:{[number]: {[number]: number}} = {
+local BinomialTable:{[number]: {[number]: number}} = { -- calculated by: !x * !y / !(x - y)
     [1] = {
         [0] = 1,
         [1] = 1
@@ -84,7 +84,7 @@ function Hermite:Bezier(X:number, Points:{number}, Order:boolean):number
     end
     X = xCheck(X, true)
     local count = #Points
-    if count <= 1 or count >= 6 then --bezier limits. You can change them if you want
+    if count <= 1 or count >= 6 then --bezier limits. You can change them if you want. Change BinomialTable then aswell.
         if doWarn then
             warn("! [Hermite]: Bezier aborted: expected 2-5 control points.")
         end
@@ -124,7 +124,7 @@ local function BounceOut(X:number)
     end
 end
 
-local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(number)}} = {
+local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(number)}} = { --you are free to add custom and rewriting enums if you want to. :Custom() is still easier
     [Enum.EasingStyle.Linear] = {
         [Enum.EasingDirection.In] = function(x:number)
             return x
@@ -263,6 +263,10 @@ local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(
     }
 }
 
+local CustomGraphs : {[string]: (number)->(number)} = {
+
+}
+
 function Hermite:Graph(X:number, Type:Enum.EasingStyle, Way:Enum.EasingDirection):number
     X = xCheck(X, true)
     local fn = EasingGraphs[Type]
@@ -281,6 +285,27 @@ function Hermite:Custom(X:number, Formula:(number)->number, Check:boolean):numbe
         res = xCheck(X, true)
     end
     return Formula(res)
+end
+
+function Hermite:Sample(Id:string, Formula:(number)->number):(number)->(number)
+    CustomGraphs[Id] = Formula
+    return Formula
+end
+
+function Hermite:Evaluate(Id:string, X:number):number
+    local Formula = CustomGraphs[Id]
+    if not Formula then
+        if doWarn then
+            warn("! [Hermite]: Evaluate aborted: unable to find formula.")
+        end
+        return 0
+    end
+    return Formula(X)
+end
+
+function Hermite:Erase(Id:string):number
+    CustomGraphs[Id] = nil
+    return 0
 end
 
 function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean):number
