@@ -84,7 +84,7 @@ function Hermite:Bezier(X:number, Points:{number}, Order:boolean)
     end
     X = xCheck(X, true)
     local count = #Points
-    if count <= 1 or count >= 6 then
+    if count <= 1 or count >= 6 then --bezier limits. You can change them if you want
         if doWarn then
             warn("! [Hermite]: Bezier aborted: expected 2-5 control points.")
         end
@@ -109,19 +109,18 @@ local function BounceOut(X:number)
     local n = 7.5625
     local d = 2.75
     local res = X
-    local sqRes = res^2
 
     if X < 1 / d then
         return n * X^2
     elseif X < 2 / d then
         res -= 1.5 / d
-        return n * sqRes + 0.75
+        return n * res * res + 0.75
     elseif X < 2.5 / d then
         res -= 2.25 / d
-        return n * sqRes + 0.9375
+        return n * res * res + 0.9375
     else
         res -= 2.625 / d
-        return n * sqRes + 0.984375
+        return n * res * res + 0.984375
     end
 end
 
@@ -150,46 +149,46 @@ local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(
     },
     [Enum.EasingStyle.Quad] = {
         [Enum.EasingDirection.In] = function(x:number)
-            return x^2
+            return x * x
         end,
         [Enum.EasingDirection.Out] = function(x:number)
             return 1 - (1 - x) * (1 - x)
         end,
         [Enum.EasingDirection.InOut] = function(x:number)
-            return x < 0.5 and 2 * x^2 or 1 - ((-2 * x + 2)^2) * 0.5
+            return x < 0.5 and 2 * x * x or 1 - ((-2 * x + 2)^2) * 0.5
         end
     },
     [Enum.EasingStyle.Cubic] = {
         [Enum.EasingDirection.In] = function(x:number)
-            return x^3
+            return x * x * x
         end,
         [Enum.EasingDirection.Out] = function(x:number)
             return 1 - (1 - x)^3
         end,
         [Enum.EasingDirection.InOut] = function(x:number)
-            return x < 0.5 and 4 * x^3 or 1 - ((-2 * x + 2)^3) * 0.5
+            return x < 0.5 and 4 * x * x * x or 1 - ((-2 * x + 2)^3) * 0.5
         end
     },
     [Enum.EasingStyle.Quart] = {
         [Enum.EasingDirection.In] = function(x:number)
-            return x^4
+            return x * x * x * x
         end,
         [Enum.EasingDirection.Out] = function(x:number)
             return 1 - (1 - x)^4
         end,
         [Enum.EasingDirection.InOut] = function(x:number)
-            return x < 0.5 and 8 * x^4 or 1 - ((-2 * x + 2)^4) * 0.5
+            return x < 0.5 and 8 * x * x * x * x or 1 - ((-2 * x + 2)^4) * 0.5
         end
     },
     [Enum.EasingStyle.Quint] = {
         [Enum.EasingDirection.In] = function(x:number)
-            return x^5
+            return x*x*x*x*x
         end,
         [Enum.EasingDirection.Out] = function(x:number)
             return 1 - (1 - x)^5
         end,
         [Enum.EasingDirection.InOut] = function(x:number)
-            return x < 0.5 and 16 * x^5 or 1 - ((-2 * x + 2)^5) * 0.5
+            return x < 0.5 and 16 * x*x*x*x*x or 1 - ((-2 * x + 2)^5) * 0.5
         end
     },
     [Enum.EasingStyle.Exponential] = {
@@ -213,7 +212,7 @@ local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(
     },
     [Enum.EasingStyle.Circular] = {
         [Enum.EasingDirection.In] = function(x:number)
-            return 1 - sqrt(1 - x^2)
+            return 1 - sqrt(1 - x*x)
         end,
         [Enum.EasingDirection.Out] = function(x:number)
             return sqrt(1 - (x - 1)^2)
@@ -224,7 +223,7 @@ local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(
     },
     [Enum.EasingStyle.Back] = {
         [Enum.EasingDirection.In] = function(x:number)
-            return 2.70158 * x^3 - 1.70158 * x^2
+            return 2.70158 * x*x*x - 1.70158 * x*x
         end,
         [Enum.EasingDirection.Out] = function(x:number)
             return 1 + 2.70158 * ((x - 1)^3) + 1.70158 * ((x - 1)^2)
