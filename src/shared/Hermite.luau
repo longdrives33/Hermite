@@ -23,7 +23,7 @@ local function xCheck(X:number, Above:boolean)
     return X
 end
 
-local BinomialTable = {
+local BinomialTable:{[number]: {[number]: number}} = {
     [1] = {
         [0] = 1,
         [1] = 1
@@ -66,19 +66,19 @@ local sort = table.sort
 local clamp = math.clamp
 local floor = math.floor
 
-function Hermite:Sigmoid(X:number, Step:number?, Shift:number?) --x is num, shift is middle point(x=0.5 always there) and step is sharpness(the higher, the sharper)
+function Hermite:Sigmoid(X:number, Step:number?, Shift:number?):number --x is num, shift is middle point(x=0.5 always there) and step is sharpness(the higher, the sharper)
     X = xCheck(X, true)
     local cStep = Step or 1
     local cShift = Shift or 0.5
     return 1 / (1 + exp(-cStep * (X - cShift)))
 end
 
-function Hermite:Linear(X:number, Start:number, End:number)
+function Hermite:Linear(X:number, Start:number, End:number):number
     X = xCheck(X, true)
     return Start + (End - Start) * X
 end
 
-function Hermite:Bezier(X:number, Points:{number}, Order:boolean)
+function Hermite:Bezier(X:number, Points:{number}, Order:boolean):number
     if Order then
         sort(Points)
     end
@@ -88,7 +88,7 @@ function Hermite:Bezier(X:number, Points:{number}, Order:boolean)
         if doWarn then
             warn("! [Hermite]: Bezier aborted: expected 2-5 control points.")
         end
-        return
+        return 0
     end
     local n = count - 1
     local bin = BinomialTable[n]
@@ -263,19 +263,19 @@ local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(
     }
 }
 
-function Hermite:Graph(X:number, Type:Enum.EasingStyle, Way:Enum.EasingDirection)
+function Hermite:Graph(X:number, Type:Enum.EasingStyle, Way:Enum.EasingDirection):number
     X = xCheck(X, true)
     local fn = EasingGraphs[Type]
     if not fn then
         if doWarn then
             warn("! [Hermite]: Graph aborted: unsupported easing style.")
         end
-        return
+        return 0
     end
     return fn[Way](X)
 end
 
-function Hermite:Custom(X:number, Formula:(number)->number, Check:boolean)
+function Hermite:Custom(X:number, Formula:(number)->number, Check:boolean):number
     local res = X
     if Check then
         res = xCheck(X, true)
@@ -283,7 +283,7 @@ function Hermite:Custom(X:number, Formula:(number)->number, Check:boolean)
     return Formula(res)
 end
 
-function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean)
+function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean):number
     if Order then
         sort(Points)
     end
@@ -293,7 +293,7 @@ function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean)
         if doWarn then
             warn("! [Hermite]: Spline aborted: expected atleast 2 points.")
         end
-        return
+        return 0
     end
     local t = clamp(xc, 0, Segments)
 
@@ -318,12 +318,12 @@ function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean)
     return p0 * h0 + d0 * h2 + p1 * h1 + d2 * h3
 end
 
-function Hermite:DefineWarn(Warn:boolean)
+function Hermite:DefineWarn(Warn:boolean):boolean
     doWarn = Warn
     return Warn
 end
 
-function Hermite:Step(X:number, Steps:number)
+function Hermite:Step(X:number, Steps:number):number
     return floor(X * Steps) / Steps
 end
 
