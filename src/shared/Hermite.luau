@@ -2,13 +2,19 @@
 --!strict
 local Hermite = {}
 local doWarn = false
+local BezCPunder = 2
+local BezCPabove = 5
 
 export type SplinePoint = {
     Point:number,
     Degree:number
 }
 
-local function xCheck(X:number, Above:boolean)
+export type genCG<T> = {
+    [string]: (number)->(T)
+}
+
+local function xCheck(X:number, Above:boolean):number
     if X > 1 and Above then
         if doWarn then
             warn("[Hermite]: X exceeds the supported range [0, 1]; clamped to 1.")
@@ -78,15 +84,15 @@ function Hermite:Linear(X:number, Start:number, End:number):number
     return Start + (End - Start) * X
 end
 
-function Hermite:Bezier(X:number, Points:{number}, Order:boolean):number
+function Hermite:Bezier(X:number, Points:{number}, Order:boolean?):number
     if Order then
         sort(Points)
     end
     X = xCheck(X, true)
     local count = #Points
-    if count <= 1 or count >= 6 then --bezier limits. You can change them if you want. Change BinomialTable then aswell.
+    if count < BezCPunder or count > BezCPabove then --bezier limits. You can change them if you want. Change BinomialTable then aswell.
         if doWarn then
-            warn("! [Hermite]: Bezier aborted: expected 2-5 control points.")
+            warn(`! [Hermite]: Bezier aborted: expected {BezCPunder}-{BezCPabove} control points.`)
         end
         return 0
     end
@@ -105,13 +111,13 @@ function Hermite:Bezier(X:number, Points:{number}, Order:boolean):number
     return Final
 end
 
-local function BounceOut(X:number)
+local function BounceOut(X:number):number
     local n = 7.5625
     local d = 2.75
     local res = X
 
     if X < 1 / d then
-        return n * X^2
+        return n * X*X
     elseif X < 2 / d then
         res -= 1.5 / d
         return n * res * res + 0.75
@@ -263,7 +269,7 @@ local EasingGraphs : {[Enum.EasingStyle] : {[Enum.EasingDirection] : (number)->(
     }
 }
 
-local CustomGraphs : {[string]: (number)->(number)} = {
+local CustomGraphs : genCG<unknown> = {
 
 }
 
@@ -287,20 +293,20 @@ function Hermite:Custom(X:number, Formula:(number)->number, Check:boolean):numbe
     return Formula(res)
 end
 
-function Hermite:Sample(Id:string, Formula:(number)->number):(number)->(number)
-    CustomGraphs[Id] = Formula
+function Hermite:Sample<T>(Id:string, Formula:(number)->T):(number)->(T)
+    CustomGraphs[Id] = Formula :: (number)->unknown
     return Formula
 end
 
-function Hermite:Evaluate(Id:string, X:number):number
+function Hermite:Evaluate<T>(Id:string, X:number):T
     local Formula = CustomGraphs[Id]
     if not Formula then
         if doWarn then
             warn("! [Hermite]: Evaluate aborted: unable to find formula.")
         end
-        return 0
+        return 0 :: any
     end
-    return Formula(X)
+    return (Formula::(number)->T)(X)
 end
 
 function Hermite:Erase(Id:string):number
@@ -323,15 +329,16 @@ function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean):number
     local t = clamp(xc, 0, Segments)
 
     local Part = floor(t) + 1
+    local part2 = Part + 1
     if Part > Segments then
         Part = Segments
     end
     local CurrentT = t > Segments and 1 or (t - (Part - 1))
 
     local p0 = Points[Part].Point
-    local p1 = Points[Part + 1].Point
+    local p1 = Points[part2].Point
     local d0 = Points[Part].Degree
-    local d2 = Points[Part + 1].Degree
+    local d2 = Points[part2].Degree
 
     local t2 = CurrentT^2
     local t3 = CurrentT^3
