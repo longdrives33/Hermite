@@ -293,9 +293,9 @@ function Hermite:Custom(X:number, Formula:(number)->number, Check:boolean):numbe
     return Formula(res)
 end
 
-function Hermite:Sample<T>(Id:string, Formula:(number)->T):(number)->(T)
+function Hermite:Sample<T>(Id:string, Formula:(number)->T):number
     CustomGraphs[Id] = Formula :: (number)->unknown
-    return Formula
+    return 0
 end
 
 function Hermite:Evaluate<T>(Id:string, X:number):T
@@ -350,9 +350,9 @@ function Hermite:Spline(X:number, Points:{SplinePoint}, Order:boolean):number
     return p0 * h0 + d0 * h2 + p1 * h1 + d2 * h3
 end
 
-function Hermite:DefineWarn(Warn:boolean):boolean
+function Hermite:DefineWarn(Warn:boolean):number
     doWarn = Warn
-    return Warn
+    return 0
 end
 
 function Hermite:Step(X:number, Steps:number):number
