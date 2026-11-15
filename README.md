@@ -36,7 +36,7 @@ local B = Hermite.Sigmoid(0.8, 15, 0.8) --customized one
 print(A, B) -- 0.666, 0.5
 ```
 
-#### `Hermite.Bezier(X: number, Points: {number}, Order: boolean): number`
+#### `Hermite.Bezier(X: number, Points: {number}): number`
 Evaluates a Bezier curve across a collection of control points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing **2 to 5** control numeric positions. *(Note: feel free to redact binomial table and point-checking if you need more)*.
@@ -50,7 +50,7 @@ local B = Hermite.Bezier(0.5, Points, true)
 print(A, B) --55, 35
 ```
 
-#### `Hermite.Spline(X: number, Points: {SplinePoint}, Order: boolean): number`
+#### `Hermite.Spline(X: number, Points: {SplinePoint}): number`
 Calculates a Hermite spline across an array of key points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing individual points. Must contain at least `2` entries.
@@ -66,6 +66,32 @@ local Points = {
 local A = Hermite.Spline(0.5, Points, false)
 local B = Hermite.Spline(1, Points, true)
 print(A, B) --6.25, 0
+```
+
+#### `Hermite.OLS(Points:{vector}):(number, number)`
+Evaluates OrdinaryLeastSquares, returning the formula needed. If you don't know, the formula is `y = slope(first returned number) * x(input) + intercept(second returned number)`.
+* `Points`: Unlimited array of points. Must contain at least `2` entries.
+
+**Example:**
+```
+local Points = {vector.create(1,2,0), vector.create(2,4,0), vector.create(3,6,0)}
+local s, i = Hermite.OLS(Points)
+
+local X = 4
+local Result = s * x + i
+print(Result) --2, 0, 8
+```
+
+#### `Hermite.Catmull(X:number, Points:{vector}):vector
+Evaluates a point on Catmull-Rom spline.
+* `X`: Input.
+* `Points`: Unlimited array of points. Must contain at least `2` entries.
+
+**Example:**
+```
+local Points = {vector.create(0,0,0), vector.create(0,10,5), vector.create(10,5,10), vector.create(20,0,0)}
+local Result = Hermite.Catmull(0.5, Points)
+print(Result) --5, 7.8125, 7.5
 ```
 
 ---
