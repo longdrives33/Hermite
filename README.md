@@ -25,7 +25,7 @@ print(Result) -- 15
 ```
 
 #### `Hermite.Sigmoid(X: number, Step: number?, Shift: number?): number`
-Founds value in a sigmoid function using X(t)
+Finds value in a sigmoid function using X(t)
 * `X`: Input (clamped between `0` and `1`).
 * `Step`: The sharpness of the curve. Higher values mean steeper transitions. *Defaults to `1`*.
 * `Shift`: The midpoint offset of the curve(where the curve is exactly equal to 0.5). *Defaults to `0.5`*.
@@ -39,7 +39,7 @@ print(A, B) -- 0.666, 0.5
 ```
 
 #### `Hermite.Bezier(X: number, Points: {number}): number`
-Founds value in a Bezier curve created by array of given control points.
+Finds value in a Bezier curve created by array of given control points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing **2 to 5** control numeric positions. *(Note: feel free to redact binomial table and point-checking if you need more)*.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
@@ -54,7 +54,7 @@ print(A, B) --55, 35
 ```
 
 #### `Hermite.Spline(X: number, Points: {SplinePoint}): number`
-Found value in a Hermite spline created by array of given control points.
+Finds value in a Hermite spline created by array of given control points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing individual points. Must contain at least `2` entries.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
@@ -73,7 +73,7 @@ print(A, B) --6.25, 0
 ```
 
 #### `Hermite.OLS(Points:{vector}):(number, number)`
-Evaluates OrdinaryLeastSquares, returning the neede formula. If you don't know, the formula is `y = slope(first returned number) * x(input) + intercept(second returned number)`.
+Evaluates Ordinary Least Squares, returning the needed formula. If you don't know, the formula is `y = slope(first returned number) * x(input) + intercept(second returned number)`.
 * `Points`: Unlimited array of points. Must contain at least `2` entries.
 A best fitting curve created, averaged between every given control point.
 
@@ -87,8 +87,8 @@ local Result = s * x + i
 print(Result) --2, 0, 8
 ```
 
-#### `Hermite.Catmull(X:number, Points:{vector}):vector
-Found a value on Catmull-Rom spline.
+#### Hermite.Catmull(X:number, Points:{vector}):vector
+Finds a value on Catmull-Rom spline.
 * `X`: Input.
 * `Points`: Unlimited array of points. Must contain at least `2` entries.
 Similar to whan Bezier Curve does, but curve has to meet every given control point.
