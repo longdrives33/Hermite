@@ -76,13 +76,9 @@ function Hermite.Linear(X:number, Start:number, End:number):number
     return Start + (End - Start) * X
 end
 
-function Hermite.Bezier(X:number, Points:{number}, Order:boolean?):number
-    local tPoints = Points
-    if Order then
-        table.sort(tPoints)
-    end
+function Hermite.Bezier(X:number, Points:{number}):number
     X = xCheck(X, true)
-    local count = #tPoints
+    local count = #Points
     if count < BezCPunder or count > BezCPabove then --bezier limits. You can change them if you want. Change BinomialTable then aswell.
         if doWarn then
             warn(`! [Hermite]: Bezier aborted: expected {BezCPunder}-{BezCPabove} control points.`)
@@ -95,7 +91,7 @@ function Hermite.Bezier(X:number, Points:{number}, Order:boolean?):number
     local av1 = 1 - X
 
     for i = 0, n do
-        local point = tPoints[i + 1]
+        local point = Points[i + 1]
         local weight = bin[i] * ((av1)^(n - i)) * (X^i)
 
         Final += point * weight
@@ -135,15 +131,9 @@ function Hermite.Erase(Id:string):()
     return
 end
 
-function Hermite.Spline(X:number, Points:{SplinePoint}, Order:boolean):number
-    local tPoints = Points
-    if Order then
-        table.sort(tPoints, function(a, b)
-            return a.Point < b.Point
-        end)
-    end
+function Hermite.Spline(X:number, Points:{SplinePoint}):number
     local xc = xCheck(X, false)
-    local Segments = #tPoints - 1
+    local Segments = #Points - 1
     if Segments < 1 then
         if doWarn then
             warn("! [Hermite]: Spline aborted: expected atleast 2 points.")
@@ -159,10 +149,10 @@ function Hermite.Spline(X:number, Points:{SplinePoint}, Order:boolean):number
     local part2 = Part + 1
     local CurrentT = t > Segments and 1 or (t - (Part - 1))
 
-    local p0 = tPoints[Part].Point
-    local p1 = tPoints[part2].Point
-    local d0 = tPoints[Part].Degree
-    local d2 = tPoints[part2].Degree
+    local p0 = Points[Part].Point
+    local p1 = Points[part2].Point
+    local d0 = Points[Part].Degree
+    local d2 = Points[part2].Degree
 
     local t2 = CurrentT*CurrentT
     local t3 = t2*CurrentT
@@ -247,7 +237,7 @@ function Hermite.OLS(Points:{vector}):(number, number)
 
     if dem == 0 then --in this case its noy your fault of input but rather you've written points in a specific input so dem somehow is 0(prob cuz all points are the same or idk). Make sure to recheck your calculations.
         if doWarn then
-            warn("! [Hermite]: OLS aborted. Your points have probably the same input(Please check lines 223-260 for more info).")
+            warn("! [Hermite]: OLS aborted. Your points have probably the same input(Please check lines 213-248 for more info).")
         end
         return 0, 0
     end
