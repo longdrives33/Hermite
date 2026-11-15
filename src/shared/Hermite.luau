@@ -215,6 +215,7 @@ function Hermite.Bake(Method:string, Resolution:number, Decode:boolean, ...:any)
         if doWarn then
             warn(`! [Hermite]: Bake aborted: {Method} is not a valid Hermite function.`)
         end
+        return {}
     end
     local steps = max(1, Resolution)
     steps = min(Resolution, BakeLimit)
