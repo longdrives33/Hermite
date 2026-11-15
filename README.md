@@ -4,78 +4,170 @@ A highly optimized, type-strict module designed for graph functions and interpol
 
 ## 🛠️ API Reference
 
-## SMALL NOTES
-* Most of the scripts either upon error, either if they don't need to return any value(These being `Sample`, `Erase` and `DefineWarn`) will always return 0.
+### Types
 
-### 📈 Core methods(70% of what you will need)
+### `SplinePoint:{Point:number, Degree:number}`
+Used in Hermite.Spline() as Points for both mentioning Y pos and strength.
 
-#### `Hermite:Linear(X: number, Start: number, End: number): number`
+### Core methods(70% of what you will need)
+
+#### `Hermite.Linear(X: number, Start: number, End: number): number`
 Performs a standard Lerp method between two numbers, returning t.
 * `X`: Input (clamped between `0` and `1`).
 * `Start`: The start value.
 * `End`: The end value.
 
-#### `Hermite:Sigmoid(X: number, Step: number?, Shift: number?): number`
-Calculates a customizable through Steo and Shift sigmoid function.
+**Example:**
+```
+local Result = Hermite.Linear(0.5, 10, 20)
+print(Result) -- 15
+```
+
+#### `Hermite.Sigmoid(X: number, Step: number?, Shift: number?): number`
+Calculates a customizable through Step and Shift sigmoid function.
 * `X`: Input (clamped between `0` and `1`).
 * `Step`: The sharpness of the curve. Higher values mean steeper transitions. *Defaults to `1`*.
 * `Shift`: The midpoint offset of the curve(where the curve is exactly t = 0.5). *Defaults to `0.5`*.
 
-#### `Hermite:Bezier(X: number, Points: {number}, Order: boolean): number`
+**Example:**
+```
+local A = Hermite.Sigmoid(0.69) --uses basic sigmoid
+local B = Hermite.Sigmoid(0.8, 15, 0.8) --customized one
+print(A, B) -- 0.666, 0.5
+```
+
+#### `Hermite.Bezier(X: number, Points: {number}): number`
 Evaluates a Bezier curve across a collection of control points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing **2 to 5** control numeric positions. *(Note: feel free to redact binomial table and point-checking if you need more)*.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
 
-#### `Hermite:Spline(X: number, Points: {SplinePoint}, Order: boolean): number`
+**Example:**
+```
+local Points = {0, 100, 20}
+local A = Hermite.Bezier(0.5, Points, false)
+local B = Hermite.Bezier(0.5, Points, true)
+print(A, B) --55, 35
+```
+
+#### `Hermite.Spline(X: number, Points: {SplinePoint}): number`
 Calculates a Hermite spline across an array of key points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing individual points. Must contain at least `2` entries.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
 
+**Example:**
+```
+local Points = {
+    {Point = 0, Degree = 5},
+    {Point = 10, Degree = 0},
+    {Point = 0, Degree = -5}
+}
+local A = Hermite.Spline(0.5, Points, false)
+local B = Hermite.Spline(1, Points, true)
+print(A, B) --6.25, 0
+```
+
+#### `Hermite.OLS(Points:{vector}):(number, number)`
+Evaluates OrdinaryLeastSquares, returning the formula needed. If you don't know, the formula is `y = slope(first returned number) * x(input) + intercept(second returned number)`.
+* `Points`: Unlimited array of points. Must contain at least `2` entries.
+
+**Example:**
+```
+local Points = {vector.create(1,2,0), vector.create(2,4,0), vector.create(3,6,0)}
+local s, i = Hermite.OLS(Points)
+
+local X = 4
+local Result = s * x + i
+print(Result) --2, 0, 8
+```
+
+#### `Hermite.Catmull(X:number, Points:{vector}):vector
+Evaluates a point on Catmull-Rom spline.
+* `X`: Input.
+* `Points`: Unlimited array of points. Must contain at least `2` entries.
+
+**Example:**
+```
+local Points = {vector.create(0,0,0), vector.create(0,10,5), vector.create(10,5,10), vector.create(20,0,0)}
+local Result = Hermite.Catmull(0.5, Points)
+print(Result) --5, 7.8125, 7.5
+```
+
 ---
 
-### 🎭 Built-in and custom graphs(15% of what you will need)
+### Custom Graphs(20% of what you will need)
 
-#### `Hermite:Graph(X: number, Type: Enum.EasingStyle, Way: Enum.EasingDirection): number`
-Evaluates standard Roblox Easing Styles.
-* `X`: Input (clamped between `0` and `1`).
-* `Type`: Supports standard easing equations except `Spring` and `None`.
-* `Way`: Direction of the curve.
-
-#### `Hermite:Custom(X: number, Formula: (number) -> number, Check: boolean): number`
+#### `Hermite.Custom(X: number, Formula: (number) -> number, Check: boolean): number`
 Executes a custom function on an input instantly without caching.
 * `X`: Input.
 * `Formula`: A callback function that manipulates and returns the result.
 * `Check`: If `true`, clamps `X` to the `[0, 1]` range before passing it to the custom formula.
 
----
+**Example:**
+```
+local A = Hermite.Custom(1.5, function(x) return x * 100 end, true)
+local B = Hermite.Custom(1.5, function(x) return x * 100 end, false)
+print(A, B) --100, 150
+```
 
-### 💾 Custom Graphs(10% of what you will need)
-
-#### `Hermite:Sample<T>(Id: string, Formula: (number) -> T): number`
+#### `Hermite.Sample<T>(Id: string, Formula: (number) -> T): number`
 Registers a mathematical formula for future use.
 * `Id`: Unique identifier for the custom graph.
 * `Formula`: The mathematical function that will be pasted.
 
-#### `Hermite:Evaluate<T>(Id: string, X: number): T`
+#### `Hermite.Evaluate<T>(Id: string, X: number): T`
 Evaluates a previously registered custom graph by its identifier.
 * `Id`: Unique identifier for the custom graph.
 * `X`: Input.
 
-#### `Hermite:Erase(Id: string): number`
+#### `Hermite.Erase(Id: string): number`
 Removes a custom graph from the registry.
 * `Id`: The unique identifier for the custom graph.
 
+**Example:**
+```
+Hermite.Sample("DoubleSquare", function(x) return (x^2)*2 end)
+local Result = Hermite.Evaluate("DoubleSquare", 0.7)
+print(Result) --0.98
+
+Hermite.Erase("DoubleSquare")
+print(Result) --! [Hermite]: Evaluate aborted: unable to find formula.
+```
+
 ---
 
-### ⚙️ Minor functions(5% of what you will need(you probably won't))
+### Minor functions(10% of what you will need(you probably won't))
 
-#### `Hermite:Step(X: number, Steps: number): number`
+#### `Hermite.Step(X: number, Steps: number): number`
 Snaps the coefficient into discrete incremental steps.
 * `X`: Input.
 * `Steps`: The resolution threshold.
 
-#### `Hermite:DefineWarn(Warn: boolean): number`
+**Example:**
+```
+local Result = Hermite.Step(0.3, 4)
+print(Result) --0.25
+```
+
+#### `Hermite.DefineWarn(Warn: boolean): number`
 Enables or disables standard output warnings(toggled off by default).
 * `Warn`: Toggles warn reporting.
+I don't really think this needs an example ;-;
+
+#### `Hermite.Bake(Method: string, Resolution: number, Decode: boolean, ...: any): {number} | buffer`
+Repeats the same method for `Resolution` times, returning a buffer(or array if Decode: true) of every calculated value ascending.
+Make sure to paste correct arguments in `...` for method you will be using. Those include: `Sigmoid`, `Linear`, `Bezier`, `Spline`, `Step`.
+* `Method`: Name of function that will be repeated.
+* `Resolution`: How many times will `Method` be repeated.
+* `Decode`: Whether `Bake` should return an array of a buffer.
+* `...`: Arguments needed for the method.
+
+**Example:**
+```
+local Result = Hermite.Bake("Linear", 4, true, 0, 100)
+
+print(Result[1]) --0
+print(Result[3]) --0.5
+print(Result[5]) --1
+```
