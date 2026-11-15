@@ -4,6 +4,11 @@ A highly optimized, type-strict module designed for graph functions and interpol
 
 ## 🛠️ API Reference
 
+### Types
+
+### `SplinePoint:{Point:number, Degree:number}`
+Used in Hermite.Spline() as Points for both mentioning Y pos and strength.
+
 ### Core methods(70% of what you will need)
 
 #### `Hermite.Linear(X: number, Start: number, End: number): number`
@@ -40,8 +45,9 @@ Evaluates a Bezier curve across a collection of control points.
 **Example:**
 ```
 local Points = {0, 100, 20}
-local Result = Hermite.Bezier(0.5, Points, false)
-print(Result) --55
+local A = Hermite.Bezier(0.5, Points, false)
+local B = Hermite.Bezier(0.5, Points, true)
+print(A, B) --55, 35
 ```
 
 #### `Hermite.Spline(X: number, Points: {SplinePoint}, Order: boolean): number`
@@ -57,8 +63,9 @@ local Points = {
     {Point = 10, Degree = 0},
     {Point = 0, Degree = -5}
 }
-local Result = Hermite.Spline(0.5, Points, false)
-print(Result) --6.25
+local A = Hermite.Spline(0.5, Points, false)
+local B = Hermite.Spline(1, Points, true)
+print(A, B) --6.25, 0
 ```
 
 ---
