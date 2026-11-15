@@ -4,18 +4,9 @@ local Hermite = {}
 local doWarn = false
 local BezCPunder = 2
 local BezCPabove = 5
+local CMCPunder = 2
+local OLSCPunder = 2
 local BakeLimit = 268_000_000
-
---upvals
-local exp = math.exp
-local sort = table.sort
-local clamp = math.clamp
-local floor = math.floor
-local max = math.max
-local min = math.min
-local bc = buffer.create
-local w32 = buffer.writef32
-local r32 = buffer.readf32
 
 export type SplinePoint = {
     Point:number,
@@ -28,7 +19,7 @@ export type genCG<T> = {
 
 local function xCheck(X:number, Above:boolean):number
     if not doWarn then
-        return clamp(X, 0, 1)
+        return math.clamp(X, 0, 1)
     end
     if X > 1 and Above then
         warn("[Hermite]: X exceeds the supported range [0, 1]; clamped to 1.")
@@ -77,7 +68,7 @@ function Hermite.Sigmoid(X:number, Step:number?, Shift:number?):number --x is nu
     X = xCheck(X, true)
     local cStep = Step or 1
     local cShift = Shift or 0.5
-    return 1 / (1 + exp(-cStep * (X - cShift)))
+    return 1 / (1 + math.exp(-cStep * (X - cShift)))
 end
 
 function Hermite.Linear(X:number, Start:number, End:number):number
@@ -88,7 +79,7 @@ end
 function Hermite.Bezier(X:number, Points:{number}, Order:boolean?):number
     local tPoints = Points
     if Order then
-        sort(tPoints)
+        table.sort(tPoints)
     end
     X = xCheck(X, true)
     local count = #tPoints
@@ -113,10 +104,7 @@ function Hermite.Bezier(X:number, Points:{number}, Order:boolean?):number
     return Final
 end
 
-local CustomGraphs : genCG<unknown> = {
-
-}
-
+local CustomGraphs : genCG<unknown> = {}
 
 function Hermite.Custom(X:number, Formula:(number)->number, Check:boolean):number
     local res = X
@@ -150,7 +138,7 @@ end
 function Hermite.Spline(X:number, Points:{SplinePoint}, Order:boolean):number
     local tPoints = Points
     if Order then
-        sort(tPoints, function(a, b)
+        table.sort(tPoints, function(a, b)
             return a.Point < b.Point
         end)
     end
@@ -162,9 +150,9 @@ function Hermite.Spline(X:number, Points:{SplinePoint}, Order:boolean):number
         end
         return 0
     end
-    local t = clamp(xc, 0, Segments)
+    local t = math.clamp(xc, 0, Segments)
 
-    local Part = floor(t) + 1
+    local Part = math.floor(t) + 1
     if Part > Segments then
         Part = Segments
     end
@@ -198,7 +186,7 @@ function Hermite.Step(X:number, Steps:number):number
         end
         return 0
     end
-    return floor(X * Steps) / Steps
+    return math.floor(X * Steps) / Steps
 end
 
 local Bakeable : {[string]:(number, ...any)->number} = {
@@ -217,24 +205,87 @@ function Hermite.Bake(Method:string, Resolution:number, Decode:boolean, ...:any)
         end
         return {}
     end
-    local steps = max(1, Resolution)
-    steps = min(Resolution, BakeLimit)
-    local buf = bc((steps + 1) * 4)
+    local steps = math.max(1, Resolution)
+    steps = math.min(Resolution, BakeLimit)
+    local buf = buffer.create((steps + 1) * 4)
+    local Result:{number} = {}
     local x = 0
     local y = 0
     for i = 0, steps do
         x = i / steps
         y = fn(x, ...)
-        w32(buf, i * 4, y)
+        buffer.writef32(buf, i * 4, y)
+        Result[i] = y
     end
-    if Decode then
-        local result = {}
-        for ii = 0, steps do
-            result[ii + 1] = r32(buf, ii * 4)
+    return Decode == true and Result or buf
+end
+
+function Hermite.OLS(Points:{vector}):(number, number)
+    local count = #Points
+    if count < OLSCPunder then
+        if doWarn then
+            warn(`! [Hermite]: OLS aborted. Expected more than {OLSCPunder} control points.`)
         end
-        return result
+        return 0, 0
     end
-    return buf
+    local sumX, sumY = 0,0
+    for _, p in Points do
+        sumX += p.x
+        sumY += p.y
+    end
+    local mx = sumX / count
+    local my = sumY / count
+
+    local num, dem = 0,0
+
+    for _, p in Points do
+        local dx = p.x - mx
+        local dy = p.y - my
+        num += dx * dy
+        dem += dx * dx
+    end
+
+    if dem == 0 then --in this case its noy your fault of input but rather you've written points in a specific input so dem somehow is 0(prob cuz all points are the same or idk). Make sure to recheck your calculations.
+        if doWarn then
+            warn("! [Hermite]: OLS aborted. Your points have probably the same input(Please check lines 223-260 for more info).")
+        end
+        return 0, 0
+    end
+    local slope = num / dem
+    local interc = my - slope * mx
+    
+    return slope, interc
+end
+
+local function catmull(p0:vector, p1:vector, p2:vector, p3:vector, t:number): vector
+    local t2 = t*t
+    local t3 = t2*t
+
+    return 0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t2 + (-p0 + 3 * p1 - 3 * p2 + p3) * t3)
+end
+
+function Hermite.Catmull(X:number, Points:{vector}):vector
+    local count = #Points
+    X = xCheck(X, true)
+    if count < CMCPunder then
+        if doWarn then
+            warn(`! [Hermite]: OLS aborted. Expected more than {CMCPunder} control points.`)
+        end
+        return vector.zero
+    end
+
+    local segm = count - 1
+    local sc = X * segm
+    local i = math.min(math.floor(sc) + 1, segm)
+    local si = i - 1
+    local t = sc - (si)
+
+    local p0 = Points[math.max(si, 1)]
+    local p1 = Points[i]
+    local p2 = Points[i + 1]
+    local p3 = Points[math.min(i + 2, count)]
+    
+    return catmull(p0, p1, p2, p3, t)
 end
 
 return Hermite
