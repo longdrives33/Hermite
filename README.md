@@ -19,7 +19,7 @@ print(Result) -- 15
 ```
 
 #### `Hermite.Sigmoid(X: number, Step: number?, Shift: number?): number`
-Calculates a customizable through Steo and Shift sigmoid function.
+Calculates a customizable through Step and Shift sigmoid function.
 * `X`: Input (clamped between `0` and `1`).
 * `Step`: The sharpness of the curve. Higher values mean steeper transitions. *Defaults to `1`*.
 * `Shift`: The midpoint offset of the curve(where the curve is exactly t = 0.5). *Defaults to `0.5`*.
