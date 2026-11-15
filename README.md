@@ -95,7 +95,7 @@ Evaluates a previously registered custom graph by its identifier.
 * `Id`: Unique identifier for the custom graph.
 * `X`: Input.
 
-#### `Hermite:Erase(Id: string): number`
+#### `Hermite.Erase(Id: string): number`
 Removes a custom graph from the registry.
 * `Id`: The unique identifier for the custom graph.
 
