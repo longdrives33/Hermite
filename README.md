@@ -1,8 +1,8 @@
 # Hermite
 
-A highly optimized, type-strict module designed for graph functions and interpolation, custom easing equations, Bezier curves, and Hermite splines.
+Module script created to control math formulas and graphs.
 
-## 🛠️ API Reference
+##  API Reference
 
 ### Types
 
@@ -12,10 +12,11 @@ Used in Hermite.Spline() as Points for both mentioning Y pos and strength.
 ### Core methods(70% of what you will need)
 
 #### `Hermite.Linear(X: number, Start: number, End: number): number`
-Performs a standard Lerp method between two numbers, returning t.
+Executes Lerp method between two numbers(you probably should know how this works already).
 * `X`: Input (clamped between `0` and `1`).
 * `Start`: The start value.
 * `End`: The end value.
+Just a linear progression.
 
 **Example:**
 ```
@@ -24,10 +25,11 @@ print(Result) -- 15
 ```
 
 #### `Hermite.Sigmoid(X: number, Step: number?, Shift: number?): number`
-Calculates a customizable through Step and Shift sigmoid function.
+Founds value in a sigmoid function using X(t)
 * `X`: Input (clamped between `0` and `1`).
 * `Step`: The sharpness of the curve. Higher values mean steeper transitions. *Defaults to `1`*.
-* `Shift`: The midpoint offset of the curve(where the curve is exactly t = 0.5). *Defaults to `0.5`*.
+* `Shift`: The midpoint offset of the curve(where the curve is exactly equal to 0.5). *Defaults to `0.5`*.
+Sharp progression that is useful for 90% of progression based things.
 
 **Example:**
 ```
@@ -37,10 +39,11 @@ print(A, B) -- 0.666, 0.5
 ```
 
 #### `Hermite.Bezier(X: number, Points: {number}): number`
-Evaluates a Bezier curve across a collection of control points.
+Founds value in a Bezier curve created by array of given control points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing **2 to 5** control numeric positions. *(Note: feel free to redact binomial table and point-checking if you need more)*.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
+Steady curve using control points.
 
 **Example:**
 ```
@@ -51,10 +54,11 @@ print(A, B) --55, 35
 ```
 
 #### `Hermite.Spline(X: number, Points: {SplinePoint}): number`
-Calculates a Hermite spline across an array of key points.
+Found value in a Hermite spline created by array of given control points.
 * `X`: Input (clamped between `0` and `1`).
 * `Points`: Array containing individual points. Must contain at least `2` entries.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
+My favorite(that's why it's called Hermite). Curve that has to start and end in given points and is controlled by degrees of middle points.
 
 **Example:**
 ```
@@ -69,8 +73,9 @@ print(A, B) --6.25, 0
 ```
 
 #### `Hermite.OLS(Points:{vector}):(number, number)`
-Evaluates OrdinaryLeastSquares, returning the formula needed. If you don't know, the formula is `y = slope(first returned number) * x(input) + intercept(second returned number)`.
+Evaluates OrdinaryLeastSquares, returning the neede formula. If you don't know, the formula is `y = slope(first returned number) * x(input) + intercept(second returned number)`.
 * `Points`: Unlimited array of points. Must contain at least `2` entries.
+A best fitting curve created, averaged between every given control point.
 
 **Example:**
 ```
@@ -83,9 +88,10 @@ print(Result) --2, 0, 8
 ```
 
 #### `Hermite.Catmull(X:number, Points:{vector}):vector
-Evaluates a point on Catmull-Rom spline.
+Found a value on Catmull-Rom spline.
 * `X`: Input.
 * `Points`: Unlimited array of points. Must contain at least `2` entries.
+Similar to whan Bezier Curve does, but curve has to meet every given control point.
 
 **Example:**
 ```
@@ -99,10 +105,11 @@ print(Result) --5, 7.8125, 7.5
 ### Custom Graphs(20% of what you will need)
 
 #### `Hermite.Custom(X: number, Formula: (number) -> number, Check: boolean): number`
-Executes a custom function on an input instantly without caching.
+Executes a custom function instantly without caching.
 * `X`: Input.
 * `Formula`: A callback function that manipulates and returns the result.
 * `Check`: If `true`, clamps `X` to the `[0, 1]` range before passing it to the custom formula.
+Anything you want to make actually. Unlike other methods, given function usually should just draw a graph.
 
 **Example:**
 ```
@@ -112,12 +119,12 @@ print(A, B) --100, 150
 ```
 
 #### `Hermite.Sample<T>(Id: string, Formula: (number) -> T): number`
-Registers a mathematical formula for future use.
+Saves a mathematical formula for future use.
 * `Id`: Unique identifier for the custom graph.
 * `Formula`: The mathematical function that will be pasted.
 
 #### `Hermite.Evaluate<T>(Id: string, X: number): T`
-Evaluates a previously registered custom graph by its identifier.
+Uses previously registered custom graph.
 * `Id`: Unique identifier for the custom graph.
 * `X`: Input.
 
@@ -140,9 +147,10 @@ print(Result) --! [Hermite]: Evaluate aborted: unable to find formula.
 ### Minor functions(10% of what you will need(you probably won't))
 
 #### `Hermite.Step(X: number, Steps: number): number`
-Snaps the coefficient into discrete incremental steps.
+Rounds the graph to fixed steps and founds the value.
 * `X`: Input.
 * `Steps`: The resolution threshold.
+Extremely steep graph with no actual progression but an instant transition instead.
 
 **Example:**
 ```
@@ -162,6 +170,7 @@ Make sure to paste correct arguments in `...` for method you will be using. Thos
 * `Resolution`: How many times will `Method` be repeated.
 * `Decode`: Whether `Bake` should return an array of a buffer.
 * `...`: Arguments needed for the method.
+Doesn't make any graph but repeat given ones instead. Might make it support custom graphs at future.
 
 **Example:**
 ```
