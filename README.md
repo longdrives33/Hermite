@@ -12,7 +12,7 @@ Performs a standard Lerp method between two numbers, returning t.
 * `Start`: The start value.
 * `End`: The end value.
 
-** Example: **
+**Example:**
 ```
 local Result = Hermite.Linear(0.5, 10, 20)
 print(Result) -- 15
@@ -24,7 +24,7 @@ Calculates a customizable through Steo and Shift sigmoid function.
 * `Step`: The sharpness of the curve. Higher values mean steeper transitions. *Defaults to `1`*.
 * `Shift`: The midpoint offset of the curve(where the curve is exactly t = 0.5). *Defaults to `0.5`*.
 
-** Example: **
+**Example:**
 ```
 local A = Hermite.Sigmoid(0.69) --uses basic sigmoid
 local B = Hermite.Sigmoid(0.8, 15, 0.8) --customized one
@@ -37,7 +37,7 @@ Evaluates a Bezier curve across a collection of control points.
 * `Points`: Array containing **2 to 5** control numeric positions. *(Note: feel free to redact binomial table and point-checking if you need more)*.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
 
-** Example: **
+**Example:**
 ```
 local Points = {0, 100, 20}
 local Result = Hermite.Bezier(0.5, Points, false)
@@ -50,7 +50,7 @@ Calculates a Hermite spline across an array of key points.
 * `Points`: Array containing individual points. Must contain at least `2` entries.
 * `Order`: If `true`, the `Points` array will be pre-sorted in ascending order before calculation.
 
-** Example: **
+**Example:**
 ```
 local Points = {
     {Point = 0, Degree = 5},
@@ -71,7 +71,7 @@ Executes a custom function on an input instantly without caching.
 * `Formula`: A callback function that manipulates and returns the result.
 * `Check`: If `true`, clamps `X` to the `[0, 1]` range before passing it to the custom formula.
 
-** Example: **
+**Example:**
 ```
 local A = Hermite.Custom(1.5, function(x) return x * 100 end, true)
 local B = Hermite.Custom(1.5, function(x) return x * 100 end, false)
@@ -92,7 +92,7 @@ Evaluates a previously registered custom graph by its identifier.
 Removes a custom graph from the registry.
 * `Id`: The unique identifier for the custom graph.
 
-** Example: **
+**Example:**
 ```
 Hermite.Sample("DoubleSquare", function(x) return (x^2)*2 end)
 local Result = Hermite.Evaluate("DoubleSquare", 0.7)
@@ -111,7 +111,7 @@ Snaps the coefficient into discrete incremental steps.
 * `X`: Input.
 * `Steps`: The resolution threshold.
 
-** Example: **
+**Example:**
 ```
 local Result = Hermite.Step(0.3, 4)
 print(Result) --0.25
@@ -130,7 +130,7 @@ Make sure to paste correct arguments in `...` for method you will be using. Thos
 * `Decode`: Whether `Bake` should return an array of a buffer.
 * `...`: Arguments needed for the method.
 
-** Example: **
+**Example:**
 ```
 local Result = Hermite.Bake("Linear", 4, true, 0, 100)
 
